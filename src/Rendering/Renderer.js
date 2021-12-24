@@ -59,25 +59,19 @@ class Renderer {
         var imageData = this.imageData
 
         for (var cell of this.cells_to_render) {
-            var color = colorLookup[cell.state.name];
-            color = !!color ? color : [0, 0, 0];
-            setPixel(imageData, cell.x, cell.y, color[0], color[1], color[2], 255);
+            this.renderCell(cell);
         }
 
         this.ctx.putImageData(imageData, 0, 0);
         this.cells_to_render.clear();
 
-        function setPixel(imageData, x, y, r, g, b, a) {
-            var index = (x + y * imageData.width) * 4;
-            imageData.data[index + 0] = r;
-            imageData.data[index + 1] = g;
-            imageData.data[index + 2] = b;
-            imageData.data[index + 3] = a;
-        }
+
     }
 
     renderCell(cell) {
-        cell.state.render(this.ctx, cell, this.cell_size);
+        var color = colorLookup[cell.state.name];
+        color = !!color ? color : [0, 0, 0];
+        setPixel(this.imageData, cell.x, cell.y, color[0], color[1], color[2], 255);
     }
 
     renderOrganism(org) {
@@ -114,14 +108,15 @@ class Renderer {
         this.cells_to_highlight.add(cell);
     }
 
-    renderCellHighlight(cell, color = "yellow") {
-        this.renderCell(cell);
-        this.ctx.fillStyle = color;
-        this.ctx.globalAlpha = 0.5;
-        this.ctx.fillRect(cell.x, cell.y, this.cell_size, this.cell_size);
-        this.ctx.globalAlpha = 1;
-        this.highlighted_cells.add(cell);
+    renderCellHighlight(cell) {
+        var color = colorLookup[cell.state.name];
+        color = !!color ? color : [0, 0, 0];
+        var r = Math.min(color[0] + 180, 255);
+        var g = Math.min(color[1] + 180, 255);
+        var b = Math.max(color[2] - 180, 0);
+        setPixel(this.imageData, cell.x, cell.y, r, g, b, 255);
     }
+
 
     clearAllHighlights(clear_to_highlight = false) {
         for (var cell of this.highlighted_cells) {
@@ -132,6 +127,14 @@ class Renderer {
             this.cells_to_highlight.clear();
         }
     }
+}
+
+function setPixel(imageData, x, y, r, g, b, a) {
+    var index = (x + y * imageData.width) * 4;
+    imageData.data[index + 0] = r;
+    imageData.data[index + 1] = g;
+    imageData.data[index + 2] = b;
+    imageData.data[index + 3] = a;
 }
 
 module.exports = Renderer;
