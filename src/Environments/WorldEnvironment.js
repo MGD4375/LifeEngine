@@ -8,7 +8,7 @@ const Hyperparams = require('../Hyperparameters.js');
 const FossilRecord = require('../Stats/FossilRecord');
 const WorldConfig = require('../WorldConfig');
 
-class WorldEnvironment extends Environment{
+class WorldEnvironment extends Environment {
     constructor(cell_size) {
         super();
         this.renderer = new Renderer('env-canvas', 'env', cell_size);
@@ -38,7 +38,7 @@ class WorldEnvironment extends Environment{
             this.generateFood();
         }
         this.removeOrganisms(to_remove);
-        this.total_ticks ++;
+        this.total_ticks++;
         if (this.total_ticks % this.data_update_rate == 0) {
             FossilRecord.updateData();
         }
@@ -49,7 +49,7 @@ class WorldEnvironment extends Environment{
             this.renderer.cells_to_render.clear();
             return;
         }
-        this.renderer.renderCells();
+        this.renderer.renderCells(this.grid_map.grid);
         this.renderer.renderHighlights();
     }
 
@@ -59,14 +59,14 @@ class WorldEnvironment extends Environment{
 
     removeOrganisms(org_indeces) {
         let start_pop = this.organisms.length;
-        for (var i of org_indeces.reverse()){
+        for (var i of org_indeces.reverse()) {
             this.total_mutability -= this.organisms[i].mutability;
             this.organisms.splice(i, 1);
         }
         if (this.organisms.length === 0 && start_pop > 0) {
             if (WorldConfig.auto_pause)
                 $('.pause-button')[0].click();
-            else if(WorldConfig.auto_reset) {
+            else if (WorldConfig.auto_reset) {
                 this.reset_count++;
                 this.reset(false);
             }
@@ -87,7 +87,7 @@ class WorldEnvironment extends Environment{
         organism.updateGrid();
         this.total_mutability += organism.mutability;
         this.organisms.push(organism);
-        if (organism.anatomy.cells.length > this.largest_cell_count) 
+        if (organism.anatomy.cells.length > this.largest_cell_count)
             this.largest_cell_count = organism.anatomy.cells.length;
     }
 
@@ -103,12 +103,12 @@ class WorldEnvironment extends Environment{
     changeCell(c, r, state, owner) {
         super.changeCell(c, r, state, owner);
         this.renderer.addToRender(this.grid_map.cellAt(c, r));
-        if(state == CellStates.wall)
+        if (state == CellStates.wall)
             this.walls.push(this.grid_map.cellAt(c, r));
     }
 
     clearWalls() {
-        for(var wall of this.walls){
+        for (var wall of this.walls) {
             let wcell = this.grid_map.cellAt(wall.col, wall.row);
             if (wcell && wcell.state == CellStates.wall)
                 this.changeCell(wall.col, wall.row, CellStates.empty, null);
@@ -122,21 +122,21 @@ class WorldEnvironment extends Environment{
     }
 
     generateFood() {
-        var num_food = Math.max(Math.floor(this.grid_map.cols*this.grid_map.rows*Hyperparams.foodDropProb/50000), 1)
+        var num_food = Math.max(Math.floor(this.grid_map.cols * this.grid_map.rows * Hyperparams.foodDropProb / 50000), 1)
         var prob = Hyperparams.foodDropProb;
-        for (var i=0; i<num_food; i++) {
-            if (Math.random() <= prob){
-                var c=Math.floor(Math.random() * this.grid_map.cols);
-                var r=Math.floor(Math.random() * this.grid_map.rows);
+        for (var i = 0; i < num_food; i++) {
+            if (Math.random() <= prob) {
+                var c = Math.floor(Math.random() * this.grid_map.cols);
+                var r = Math.floor(Math.random() * this.grid_map.rows);
 
-                if (this.grid_map.cellAt(c, r).state == CellStates.empty){
+                if (this.grid_map.cellAt(c, r).state == CellStates.empty) {
                     this.changeCell(c, r, CellStates.food, null);
                 }
             }
         }
     }
 
-    reset(confirm_reset=true, reset_life=true) {
+    reset(confirm_reset = true, reset_life = true) {
         if (confirm_reset && !confirm('The current environment will be lost. Proceed?'))
             return false;
 
@@ -153,7 +153,7 @@ class WorldEnvironment extends Environment{
 
     resizeGridColRow(cell_size, cols, rows) {
         this.renderer.cell_size = cell_size;
-        this.renderer.fillShape(rows*cell_size, cols*cell_size);
+        this.renderer.fillShape(rows * cell_size, cols * cell_size);
         this.grid_map.resize(cols, rows, cell_size);
     }
 
@@ -167,4 +167,3 @@ class WorldEnvironment extends Environment{
 }
 
 module.exports = WorldEnvironment;
-
